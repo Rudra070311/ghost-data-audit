@@ -1,5 +1,4 @@
 import csv
-import pathlib
 
 class CSVreader:
     def __init__(self, file_path):
@@ -20,10 +19,3 @@ class CSVreader:
                 if None in row:
                     raise ValueError(f"Too many fields: {reader.line_num}")
                 yield row
-                
-if __name__ == "__main__":
-    root_dir = pathlib.Path(__file__).resolve().parents[2]
-    csv_path = root_dir / "dataset" / "deletion_requests.csv"
-
-    for row in CSVreader(csv_path).read():
-        print(row)

@@ -1,4 +1,3 @@
-# code/ingestion/media.py
 import json
 import pathlib
 
