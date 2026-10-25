@@ -7,36 +7,37 @@ class Manifest:
     @staticmethod
     def build_manifest(root_dir: pathlib.Path) -> Dict[str, Any]:
         manifest = {}
+        root_dir = pathlib.Path(root_dir)
         
         for path in root_dir.rglob("*"):
             if path.is_dir():
                 continue
-            
+                
             hasher = hashlib.sha256()
-            with pathlib.Path(path).open("rb") as f:
+            with path.open("rb") as f:
                 while chunk := f.read(8192):
                     hasher.update(chunk)
             content_hash = hasher.hexdigest()
-            
-            file_type = pathlib.Path(path).suffix
-            if file_type != ".csv" and file_type != ".sql" and file_type != ".json" and file_type != ".png":
-                raise ValueError(f"Unsupported file type: {file_type}. Only CSV, SQL, JSON, and PNG files are supported.")
+            file_type = path.suffix.lstrip(".").lower()
+            status = "PENDING"
+            if file_type not in ["csv", "json", "sql", "log", "txt"]:
+                status = "UNSUPPORTED"
 
             rel_path = str(path.relative_to(root_dir)).replace("\\", "/")
-            manifest[str(rel_path)] = {
-                "source_id": f"src_{content_hash}",
-                "source_path": str(rel_path),
+            path_hash = hashlib.sha256(rel_path.encode("utf-8")).hexdigest()[:8]
+            
+            manifest[rel_path] = {
+                "source_id": f"src_{path_hash}",
+                "source_path": rel_path,
                 "file_type": file_type,
                 "sha256": content_hash,
-                "size_bytes": pathlib.Path(path).stat().st_size,
-                "status": "PENDING",
+                "size_bytes": path.stat().st_size,
+                "status": status,
                 "items_extracted": 0,
                 "errors": []
             }
 
         return manifest
-
-
 
     @staticmethod
     def record_result(manifest: Dict[str, Any], source_path: str, status: str, item_count: int, errors: List[str] = None) -> Dict[str, Any]:
