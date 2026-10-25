@@ -11,14 +11,14 @@ class CSVreader:
         
         with self.file_path.open(mode="r", newline="", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
-            if reader.fieldnames:
+            if not reader.fieldnames:
                 raise ValueError(f"CSV file is empty or does not contain headers: {self.file_path}")
             if len(reader.fieldnames) != len(set(reader.fieldnames)):
                 raise ValueError(f"CSV file contains duplicate column names: {self.file_path}")
             
             for row in reader:
                 if None in row:
-                    raise ValueError(f"Too many fields: {self.line_number}")
+                    raise ValueError(f"Too many fields: {reader.line_num}")
                 yield row
                 
 if __name__ == "__main__":
